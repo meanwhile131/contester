@@ -1,0 +1,33 @@
+#challenge {
+    margin: 1% 10%;
+}
+
+#form {
+    text-align: center;
+}
+
+textarea {
+    width: 80%;
+    height: 40vh;
+}
+
+#text {
+    text-align: justify;
+}
+
+table,
+th,
+td {
+    border: 3px solid black;
+    border-collapse: collapse;
+}
+
+tr {
+    height: 1em;
+    white-space: pre;
+}
+
+table {
+    text-align: center;
+    margin: auto;
+}
