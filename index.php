@@ -28,7 +28,7 @@
         <script src="js/auth.js"></script>
         EOF;
     }
-    $tasks = $db->query("SELECT * FROM `challenges`");
+    $tasks = pg_query($db, "SELECT * FROM challenges");
     if ($logged_in) {
         $admin = $token["email"] == "sashachernyakov111111@gmail.com" || $token["email"] == "nadezhdasergeeva77@gmail.com";
         $profilequery = $db->prepare("SELECT * FROM `users` WHERE id=?");
@@ -57,7 +57,7 @@
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($tasks->fetch_all(MYSQLI_ASSOC) as $row) {
+                <?php foreach (pg_fetch_all($tasks) as $row) {
                     $id = $row["id"];
                     $edit_link = $admin ? " (<a href=\"view_challenge.php?id=$id&edit=1\">редактировать</a>)" : "";
                     $name = $row["name"];
