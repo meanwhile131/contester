@@ -1,5 +1,6 @@
 {
     "require": {
-        "google/apiclient": "^2.15"
+        "web-auth/webauthn-lib": "^5.2",
+        "ramsey/uuid": "^4.9"
     }
 }

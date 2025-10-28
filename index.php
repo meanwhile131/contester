@@ -17,8 +17,6 @@
     include "vendor/autoload.php";
     include "database.php";
 
-    $CLIENT_ID = "";
-    $client = new Google_Client(["466834063559-e8ntnvvptcbbdp70ovb3v1m4h8qm3c8i.apps.googleusercontent.com" => $CLIENT_ID]);
     try {
         $token = $client->verifyIdToken($_COOKIE["token"]);
         $logged_in = true;

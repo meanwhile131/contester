@@ -4,8 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Главная страница</title>
-    <script src="https://accounts.google.com/gsi/client"></script>
+    <title>Регистрация</title>
     <link rel="stylesheet" href="/css/general.css">
 </head>
 
@@ -14,18 +13,7 @@
     include "vendor/autoload.php";
     include "database.php";
 
-    $CLIENT_ID = "";
-    $client = new Google_Client(["466834063559-e8ntnvvptcbbdp70ovb3v1m4h8qm3c8i.apps.googleusercontent.com" => $CLIENT_ID]);
-    try {
-        $token = $client->verifyIdToken($_COOKIE["token"]);
-    } catch (LogicException) {
-        echo <<<EOF
-        <p>Войдите в аккаунт!</p>
-        <script src="https://accounts.google.com/gsi/client"></script>
-        <script src="/js/auth.js"></script>
-        EOF;
-        exit();
-    }
+    
 
     if (array_key_exists("register", $_POST)) {
         $query = $db->prepare("REPLACE INTO `users` (`id`, `first_name`, `second_name`, `third_name`, `group`) VALUES (?, ?, ?, ?, ?)");
