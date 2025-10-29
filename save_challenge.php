@@ -1,3 +1,20 @@
+<?php
+require_once 'secrets.php';
+$userid = $_SESSION["user_id"];
+if ($userid) {
+    $user_query = pg_query_params($db, "SELECT is_admin FROM users WHERE sub=$1", [$userid]);
+    $user = pg_fetch_row($user_query, null, PGSQL_ASSOC);
+    if (!$user) {
+        header("Location: /profile.php");
+        exit();
+    }
+    $is_admin = $user["is_admin"] == "t";
+    if (!$is_admin) {
+        header("Location: /");
+        exit();
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="ru">
 
@@ -10,41 +27,33 @@
 
 <body>
     <?php
-    header('X-Accel-Buffering: no');
-    ob_implicit_flush(1);
-    ini_set("display_errors", "1");
-    ini_set("display_startup_errors", "1");
-    error_reporting(E_ALL);
     require_once "vendor/autoload.php";
-    include "database.php";
-    echo "Аутентификация...<br>";
-    ob_flush();
-    $CLIENT_ID = "";
-    $client = new Google_Client(["466834063559-e8ntnvvptcbbdp70ovb3v1m4h8qm3c8i.apps.googleusercontent.com" => $CLIENT_ID]);
-    try {
-        $token = $client->verifyIdToken($_COOKIE["token"]);
-    } catch (LogicException) {
-        echo <<<EOF
-        <p>Неправильный токен аутентификации!</p>
-        EOF;
-        exit();
-    }
-    $admin = $token["email"] == "sashachernyakov111111@gmail.com" || $token["email"] == "nadezhdasergeeva77@gmail.com" || $token["email"] == "nadezhdasergeeva77@gmail.com";
+    require_once "secrets.php";
 
     if ($_POST["delete"] == "on") {
-        echo "Удаление задачи...<br>";
-        ob_flush();
-        $query = $db->prepare("DELETE FROM `challenges` WHERE id=?");
-        $query->execute([$_POST["id"]]);
-        echo "Задача удалена!<br>";
-        ob_flush();
+        $result = pg_query_params($db, "DELETE FROM challenges WHERE id=$1", [$_POST["id"]]);
+        $rows = pg_affected_rows($result);
+        if ($rows) {
+            echo "Задача удалена!<br>";
+        }
+        else {
+            echo "Ошибка при удалении задачи!<br>";
+        }
     } else {
-        echo "Сохранение задачи...<br>";
-        ob_flush();
-        $query = $db->prepare("REPLACE INTO `challenges` (`id`, `name`, `text`, `tests`) VALUES (?, ?, ?, ?)");
-        $query->execute([$_POST["id"], $_POST["name"], $_POST["text"], $_POST["tests"]]);
-        echo "Задача сохранена!<br>";
-        ob_flush();
+        $result = pg_query_params($db, <<<EOF
+        INSERT INTO challenges (id, "name", "text", tests) VALUES ($1, $2, $3, $4)
+        ON CONFLICT (id) DO UPDATE SET
+        "name" = EXCLUDED."name",
+        "text" = EXCLUDED."text",
+        tests = EXCLUDED.tests;
+        EOF, [$_POST["id"], $_POST["name"], $_POST["text"], $_POST["tests"]]);
+        $rows = pg_affected_rows($result);
+        if ($rows) {
+            echo "Задача сохранена!<br>";
+        }
+        else {
+            echo "Ошибка при сохранении задачи!<br>";
+        }
     }
     ?>
 </body>

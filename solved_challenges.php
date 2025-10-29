@@ -1,3 +1,21 @@
+<?php
+include "vendor/autoload.php";
+include "secrets.php";
+$userid = $_SESSION["user_id"];
+if ($userid) {
+    $user_query = pg_query_params($db, "SELECT * FROM users WHERE sub=$1", [$userid]);
+    $user = pg_fetch_row($user_query, null, PGSQL_ASSOC);
+    if (!$user) {
+        header("Location: /profile.php");
+        exit();
+    }
+    $is_admin = $user["is_admin"] == "t";
+    if (!$is_admin) {
+        header("Location: /");
+        exit();
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="ru">
 
@@ -5,38 +23,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Главная страница</title>
-    <script src="https://accounts.google.com/gsi/client"></script>
     <link rel="stylesheet" href="/css/general.css">
     <link rel="stylesheet" href="/css/solved_challenges.css">
 </head>
 
 <body>
     <?php
-    include "vendor/autoload.php";
-    include "database.php";
-
     error_reporting(E_ALL);
-    ini_set('display_errors', '1');
-    $CLIENT_ID = "";
-    $client = new Google_Client(["466834063559-e8ntnvvptcbbdp70ovb3v1m4h8qm3c8i.apps.googleusercontent.com" => $CLIENT_ID]);
-    try {
-        $token = $client->verifyIdToken($_COOKIE["token"]);
-    } catch (LogicException) {
-        echo <<<EOF
-        <p>Войдите в аккаунт!</p>
-        <script src="https://accounts.google.com/gsi/client"></script>
-        <script src="/js/auth.js"></script>
-        EOF;
-        exit();
-    }
-
-    if ($token["email"] != "sashachernyakov111111@gmail.com" && $token["email"] != "nadezhdasergeeva77@gmail.com") {
-        echo "<p>Вы не являетесь админом!</p>";
-        exit();
-    }
-
-    $users = $db->query("SELECT * FROM `users`")->fetch_all(MYSQLI_ASSOC);
-    $challenges = $db->query("SELECT id FROM `challenges`")->fetch_all();
+    ini_set('display_errors', 'On');
+    $users_query = pg_query($db, "SELECT * FROM users");
+    $users = pg_fetch_all($users_query);
+    $challenges_query = pg_query($db, "SELECT id FROM challenges");
+    $challenges = pg_fetch_all($challenges_query);
     ?>
     <h1>Решённые задачи</h1>
     <table>
@@ -46,8 +44,9 @@
                 <th>Имя</th>
                 <th>Группа</th>
                 <?php
-                foreach ($challenges as $_ => $id) {
-                    echo "<th>{$id[0]}</th>";
+                foreach ($challenges as $_ => $challenge) {
+                    $id = $challenge["id"];
+                    echo "<th>{$id}</th>";
                 }
                 ?>
             </tr>
@@ -61,8 +60,9 @@
                     <td>{$user["first_name"]}</td>
                     <td>{$user["group"]}</td>
                 EOF;
-                foreach ($challenges as $_ => $id) {
-                    $solved = intval($user["tasks"]) & 1 << (intval($id[0]) - 1) ? "+" : "-";
+                foreach ($challenges as $_ => $challenge) {
+                    $id = intval($challenge["id"]) - 1;
+                    $solved = intval($user["tasks_solved"]) & 1 << $id ? "+" : "-";
                     echo "<td>$solved</td>";
                 }
             }

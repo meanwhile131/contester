@@ -1,3 +1,19 @@
+<?php
+require_once 'secrets.php';
+$userid = $_SESSION["user_id"];
+if ($userid) {
+    $user_query = pg_query_params($db, "SELECT is_admin FROM users WHERE sub=$1", [$userid]);
+    $user = pg_fetch_row($user_query, null, PGSQL_ASSOC);
+    if (!$user) {
+        header("Location: /profile.php");
+        exit();
+    }
+}
+else {
+    header("Location: /");
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="ru">
 
@@ -12,29 +28,13 @@
     <?php
     header('X-Accel-Buffering: no');
     ob_implicit_flush(1);
-    ini_set("display_errors", "1");
-    ini_set("display_startup_errors", "1");
-    error_reporting(E_ALL);
-    require_once "vendor/autoload.php";
-    include "database.php";
-    echo "Аутентификация...<br>";
-    ob_flush();
-    $CLIENT_ID = "";
-    $client = new Google_Client(["466834063559-e8ntnvvptcbbdp70ovb3v1m4h8qm3c8i.apps.googleusercontent.com" => $CLIENT_ID]);
-    try {
-        $token = $client->verifyIdToken($_COOKIE["token"]);
-    } catch (LogicException) {
-        echo <<<EOF
-        <p>Неправильный токен аутентификации!</p>
-        EOF;
-        exit();
-    }
     echo "Подготовка к выполнению тестов...<br>";
+    $task = $_POST["id"];
+    echo "Задача: $task<br>";
     ob_flush();
-
-    $query = $db->prepare("SELECT * FROM `challenges` WHERE id=?");
-    $query->execute([$_POST["id"]]);
-    $tests = json_decode($query->get_result()->fetch_assoc()["tests"], true);
+    $query = pg_query_params($db, "SELECT * FROM challenges WHERE id=$1", [$_POST["id"]]);
+    $challenge = pg_fetch_row($query, null, PGSQL_ASSOC);
+    $tests = json_decode($challenge["tests"], true);
 
     $descriptorspec = [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]];
     $file_path = "/tmp/" . bin2hex(random_bytes(6)) . ".py";
@@ -71,16 +71,20 @@
         fclose($pipes[2]);
         proc_close($process);
     }
-    // unlink($file_path);
+    unlink($file_path);
     echo "<br>";
     if ($failed) {
         echo "Тесты не пройдены!";
     } else {
         echo "Тесты пройдены! Сохраняем результат...<br>";
         ob_flush();
-        $query = $db->prepare("UPDATE `users` SET `tasks`= bin(`tasks`) | 1<<? WHERE id=?");
-        $query->execute([intval($_POST["id"]) - 1, $token["sub"]]);
-        echo "Результат сохранен!";
+        $query = pg_query_params($db, "UPDATE users SET tasks_solved= (tasks_solved | 1<<$1) WHERE sub=$2", [intval($_POST["id"]) - 1, $userid]);
+        if (pg_affected_rows($query) == 1) {
+            echo "Результат сохранен!";
+        }
+        else {
+            echo "Ошибка при сохранении результата!";
+        }
     }
     echo "</p>";
     ob_flush();

@@ -1,3 +1,16 @@
+<?php
+require_once 'secrets.php';
+$userid = $_SESSION["user_id"];
+if ($userid) {
+    $user_query = pg_query_params($db, "SELECT is_admin FROM users WHERE sub=$1", [$userid]);
+    $user = pg_fetch_row($user_query, null, PGSQL_ASSOC);
+    if (!$user) {
+        header("Location: /profile.php");
+        exit();
+    }
+    $is_admin = $user["is_admin"] == "t";
+}
+?>
 <!DOCTYPE html>
 <html lang="ru">
 
@@ -12,24 +25,13 @@
     </title>
     <link rel="stylesheet" href="/css/general.css">
     <link rel="stylesheet" href="/css/view_challenge.css">
-    <script src="https://accounts.google.com/gsi/client"></script>
-    <script src="/js/send_solution.js"></script>
     <?php
-    // ini_set('display_errors', 1);
-    // ini_set('display_startup_errors', 1);
-    // error_reporting(E_ALL);
 
-    include "database.php";
+    include "secrets.php";
     include "vendor/autoload.php";
 
-    $CLIENT_ID = "";
-    $client = new Google_Client(["466834063559-e8ntnvvptcbbdp70ovb3v1m4h8qm3c8i.apps.googleusercontent.com" => $CLIENT_ID]);
-    try {
-        $token = $client->verifyIdToken($_COOKIE["token"]);
-        $logged_in = true;
-    } catch (LogicException) {
-    }
-    $edit = array_key_exists("edit", $_GET) && $_GET["edit"] == 1 && ($token["email"] == "sashachernyakov111111@gmail.com" || $token["email"] == "nadezhdasergeeva77@gmail.com");
+    $task_safe = htmlspecialchars($task, ENT_QUOTES|ENT_SUBSTITUTE, "UTF-8");
+    $edit = $_GET["edit"] == 1 && $is_admin;
     if ($edit) {
         echo <<<EOF
         <script src="/js/edit_challenge.js"></script>
@@ -37,10 +39,9 @@
     }
     $editable = $edit ? " contenteditable=\"true\"" : "";
 
-    $challenge_request = $db->prepare("SELECT * FROM `challenges` WHERE id=?");
-    $challenge_request->execute([$task]);
-    $challenge = $challenge_request->get_result()->fetch_assoc();
-    if ($challenge == null) {
+    $challenge_request = pg_query_params($db, "SELECT * FROM challenges WHERE id=$1", [$_GET["id"]]);
+    $challenge = pg_fetch_row($challenge_request, null, PGSQL_ASSOC);
+    if (!$challenge) {
         if ($edit) {
             $challenge = ["name" => "Название задачи", "text" => "Условие задачи", "tests" => "{}"];
         } else {
@@ -58,11 +59,9 @@
     {$challenge["name"]}
     </h1>
     EOF;
-    if (!$logged_in) {
+    if (!$user) {
         echo <<<EOF
         <h3>Войдите в аккаунт, чтобы отправить задачу!</h3>
-        <script src="https://accounts.google.com/gsi/client"></script>
-        <script src="js/auth.js"></script>
         EOF;
     }
     ?>
@@ -112,7 +111,7 @@
                 <input type="hidden" id="form_text" name="text" value="">
                 <input type="hidden" id="form_name" name="name" value="">
                 <input type="hidden" id="form_tests" name="tests" value="">
-                <input type="hidden" id="id" name="id" value="$task">
+                <input type="hidden" id="id" name="id" value="$task_safe">
                 <label>Удалить задачу<input type="checkbox" name="delete" /></label>
             </form>
             <button onclick="edit()">Сохранить</button>
@@ -122,9 +121,10 @@
         
             <form action="/check_solution.php" method="post" id="send_form">
                 <textarea type="text" name="code"></textarea>
-                <input type="hidden" id="id" name="id" value="$task">
+                <input type="hidden" id="id" name="id" value="$task_safe">
+                <br>
+                <button type="submit">Отправить</button>
             </form>
-            <button onclick="send()">Отправить</button>
         EOF;
         }
         ?>
