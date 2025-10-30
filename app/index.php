@@ -1,18 +1,18 @@
 <?php
-    include "vendor/autoload.php";
-    include "secrets.php";
+include "vendor/autoload.php";
+include "secrets.php";
 
-    $tasks = pg_query($db, "SELECT * FROM challenges");
-    $userid = $_SESSION["user_id"];
-    if ($userid) {
-        $user_query = pg_query_params($db, "SELECT * FROM users WHERE sub=$1", [$userid]);
-        $user = pg_fetch_row($user_query, null, PGSQL_ASSOC);
-        if (!$user) {
-            header("Location: /profile.php");
-            exit();
-        }
-        $is_admin = $user["is_admin"] == "t";
+$tasks = pg_query($db, "SELECT * FROM challenges");
+$userid = $_SESSION["user_id"];
+if ($userid) {
+    $user_query = pg_query_params($db, "SELECT * FROM users WHERE sub=$1", [$userid]);
+    $user = pg_fetch_row($user_query, null, PGSQL_ASSOC);
+    if (!$user) {
+        header("Location: /profile.php");
+        exit();
     }
+    $is_admin = $user["is_admin"] == "t";
+}
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -68,7 +68,12 @@
                 } ?>
             </tbody>
         </table>
-        <?php 
+        <?php
+        if ($userid) {
+            echo <<<EOF
+            <a href="/profile.php">Редактор профиля</a><br>
+            EOF;
+        }
         if ($is_admin) {
             $new_task_id = intval($id) + 1;
             echo <<<EOF
