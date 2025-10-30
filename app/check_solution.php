@@ -78,7 +78,7 @@ else {
     } else {
         echo "Тесты пройдены! Сохраняем результат...<br>";
         ob_flush();
-        $query = pg_query_params($db, "UPDATE users SET tasks_solved= (tasks_solved | 1<<$1) WHERE sub=$2", [intval($_POST["id"]) - 1, $userid]);
+        $query = pg_query_params($db, "UPDATE users SET tasks_solved= tasks_solved | (1<<$1) WHERE sub=$2", [intval($_POST["id"]) - 1, $userid]);
         if (pg_affected_rows($query) == 1) {
             echo "Результат сохранен!";
         }
