@@ -29,6 +29,8 @@ if ($userid) {
     <h1>Задачи</h1>
     <?php
     if (!$userid) {
+        $scheme = isset($_SESSION["HTTPS"]) ? "https" : "http";
+        $host = htmlspecialchars($_SERVER['HTTP_HOST']);
         echo "<h3>Войдите в аккаунт, чтобы видеть решения!</h3>";
         echo <<<EOF
         <script src="https://accounts.google.com/gsi/client" async></script>
@@ -37,7 +39,7 @@ if ($userid) {
             id="g_id_onload"
             data-client_id="$google_clientid"
             data-ux_mode="redirect"
-            data-login_uri="https://contester.meanwhile131.dpdns.org/sign_in.php"
+            data-login_uri="$scheme://$host/sign_in.php"
         ></div>
         <div class="sign_in_button"><div class="g_id_signin"></div></div>
         EOF;
