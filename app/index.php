@@ -29,8 +29,8 @@ if ($userid) {
     <h1>Задачи</h1>
     <?php
     if (!$userid) {
-        $scheme = isset($_SESSION["HTTPS"]) ? "https" : "http";
         $host = htmlspecialchars($_SERVER['HTTP_HOST']);
+        $scheme = $_SERVER['HTTP_HOST'] == "localhost" ? "http" : "https";
         echo "<h3>Войдите в аккаунт, чтобы видеть решения!</h3>";
         echo <<<EOF
         <script src="https://accounts.google.com/gsi/client" async></script>
