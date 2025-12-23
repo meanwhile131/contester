@@ -1,1 +1,0 @@
-<?php $db = new mysqli("localhost", "root", null, "contester"); ?>
