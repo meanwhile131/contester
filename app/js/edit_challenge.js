@@ -15,11 +15,12 @@ window.onload = () => {
 };
 
 function edit() {
-    let tests = {};
+    let tests = [];
     const table = document.getElementById("io").getElementsByTagName("tbody")[0];
     for (let i = 0; i < table.rows.length - 1; i++) {
         const row = table.rows[i];
-        tests[row.cells[0].innerText] = row.cells[1].textContent;
+        const test = {in: row.cells[0].innerText, out: row.cells[1].textContent};
+        tests.push(test);
     }
 
     document.getElementById("form_text").value = document.getElementById("text").textContent;

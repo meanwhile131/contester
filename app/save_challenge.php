@@ -35,25 +35,39 @@ if ($userid) {
         $rows = pg_affected_rows($result);
         if ($rows) {
             echo "Задача удалена!<br>";
-        }
-        else {
+        } else {
             echo "Ошибка при удалении задачи!<br>";
         }
     } else {
+        pg_query($db, "BEGIN");
         $result = pg_query_params($db, <<<EOF
-        INSERT INTO challenges (id, "name", "text", tests) VALUES ($1, $2, $3, $4)
+        INSERT INTO challenges (id, "name", "text") VALUES ($1, $2, $3)
         ON CONFLICT (id) DO UPDATE SET
         "name" = EXCLUDED."name",
-        "text" = EXCLUDED."text",
-        tests = EXCLUDED.tests;
-        EOF, [$_POST["id"], $_POST["name"], $_POST["text"], $_POST["tests"]]);
-        $rows = pg_affected_rows($result);
-        if ($rows) {
-            echo "Задача сохранена!<br>";
-        }
-        else {
+        "text" = EXCLUDED."text";
+        EOF, [$_POST["id"], $_POST["name"], $_POST["text"]]);
+
+        if (pg_affected_rows($result) != 1) {
+            pg_query($db, "ROLLBACK");
             echo "Ошибка при сохранении задачи!<br>";
+            exit();
         }
+
+        pg_query_params($db, "DELETE FROM tests WHERE challenge=$1", [$_POST["id"]]);
+
+        $result = pg_query_params($db, <<<EOF
+            INSERT INTO tests (challenge, "in", "out")
+            SELECT $1, "in", "out"
+            FROM json_to_recordset($2) AS x("in" text, "out" text);
+            EOF, [$_POST["id"], $_POST["tests"]]);
+        if (!$result) {
+            pg_query($db, "ROLLBACK");
+            echo "Ошибка при сохранении тестов!<br>";
+            exit();
+        }
+
+        pg_query($db, "COMMIT");
+        echo "Задача сохранена!<br>";
     }
     ?>
 </body>

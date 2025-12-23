@@ -79,7 +79,11 @@ if ($userid) {
             <?php echo "<tbody$editable>"; ?>
             <?php
             $i = 0;
-            foreach (json_decode($challenge["tests"]) as $input => $output) {
+            $tests_request = pg_query_params($db, "SELECT * FROM tests WHERE challenge=$1", [$_GET["id"]]);
+            $tests = pg_fetch_all($tests_request, PGSQL_ASSOC);
+            foreach ($tests as $test) {
+                $input = $test["in"];
+                $output = $test["out"];
                 echo <<<EOF
                         <tr>
                             <td>$input</td>
