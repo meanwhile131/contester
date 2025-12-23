@@ -2,7 +2,7 @@
 include "vendor/autoload.php";
 include "secrets.php";
 
-$tasks = pg_query($db, "SELECT * FROM challenges");
+$tasks = pg_query($db, "SELECT * FROM challenges ORDER BY id ASC");
 $userid = $_SESSION["user_id"];
 if ($userid) {
     $user_query = pg_query_params($db, "SELECT * FROM users WHERE sub=$1", [$userid]);

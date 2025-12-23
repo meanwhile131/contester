@@ -33,7 +33,7 @@ if ($userid) {
     ini_set('display_errors', 'On');
     $users_query = pg_query($db, "SELECT * FROM users");
     $users = pg_fetch_all($users_query);
-    $challenges_query = pg_query($db, "SELECT id FROM challenges");
+    $challenges_query = pg_query($db, "SELECT id FROM challenges ORDER BY id ASC");
     $challenges = pg_fetch_all($challenges_query);
     ?>
     <h1>Решённые задачи</h1>
