@@ -30,7 +30,8 @@ if ($userid) {
     <?php
     if (!$userid) {
         $host = htmlspecialchars($_SERVER['HTTP_HOST']);
-        $scheme = $_SERVER['HTTP_HOST'] == "localhost" ? "http" : "https";
+        $domain = parse_url($_SERVER['HTTP_HOST'], PHP_URL_HOST);
+        $scheme = $domain == "localhost" ? "http" : "https";
         echo "<h3>Войдите в аккаунт, чтобы видеть решения!</h3>";
         echo <<<EOF
         <script src="https://accounts.google.com/gsi/client" async></script>
