@@ -30,7 +30,7 @@ if ($userid) {
     include "secrets.php";
     include "vendor/autoload.php";
 
-    $task_safe = htmlspecialchars($task, ENT_QUOTES|ENT_SUBSTITUTE, "UTF-8");
+    $task_safe = htmlspecialchars($task, ENT_QUOTES | ENT_SUBSTITUTE, "UTF-8");
     $edit = $_GET["edit"] == 1 && $is_admin;
     if ($edit) {
         echo <<<EOF
