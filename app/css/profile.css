@@ -1,0 +1,9 @@
+.success_message {
+    color: green;
+    text-align: center;
+}
+
+.error_message {
+    color: red;
+    text-align: center;
+}

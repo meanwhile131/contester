@@ -6,6 +6,27 @@ if (!$_SESSION["user_id"]) {
     header('Location: /');
     exit();
 }
+if ($_SERVER['REQUEST_METHOD'] === "POST") {
+    if (!empty($_POST["first_name"]) && !empty($_POST["second_name"]) && !empty($_POST["third_name"]) && in_array($_POST["group"], ["211", "212", "231", "241"])) { 
+        $result = pg_query_params($db, <<<EOF
+            INSERT INTO users (sub,first_name,second_name,third_name,"group") VALUES ($1, $2, $3, $4, $5)
+            ON CONFLICT (sub) DO UPDATE SET 
+                first_name = EXCLUDED.first_name,
+                second_name = EXCLUDED.second_name,
+                third_name = EXCLUDED.third_name,
+                "group" = EXCLUDED."group";
+            EOF, [$_SESSION["user_id"], $_POST["first_name"], $_POST["second_name"], $_POST["third_name"], $_POST["group"]]);
+        if ($result) {
+            $success = true;
+        }
+        else {
+            $success = false;
+        }
+    }
+    else {
+        $success = false;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -15,12 +36,7 @@ if (!$_SESSION["user_id"]) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Редактор профиля</title>
     <link rel="stylesheet" href="/css/general.css">
-    <style>
-        .success_message {
-            color: green;
-            text-align: center;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/profile.css">
 </head>
 
 <body>
@@ -37,11 +53,16 @@ if (!$_SESSION["user_id"]) {
         $group_231 = ($group == 231) ? "checked" : "";
         $group_241 = ($group == 241) ? "checked" : "";
     }
-    if (isset($_GET["success"])) {
-        echo "<h4 class=\"success_message\">Профиль успешно изменен.</h4>";
+    if (isset($success)) {
+        if ($success) {
+            echo "<h4 class=\"success_message\">Профиль успешно изменен.</h4>";
+        }
+        else {
+            echo "<h4 class=\"error_message\">Ошибка сохранения профиля.</h4>";
+        }
     }
     echo <<<EOF
-        <form action="/save_profile.php" method="post">
+        <form action="/profile.php" method="post">
             <label>Фамилия:
                 <input required type="text" name="second_name" value="$second_name">
             </label>
