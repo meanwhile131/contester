@@ -2,3 +2,4 @@ vendor
 app/secrets.php
 .idea
 build
+.vscode
