@@ -1,4 +1,5 @@
 <?php
+header('X-Accel-Buffering: no');
 require_once 'secrets.php';
 $userid = $_SESSION["user_id"];
 if ($userid) {
