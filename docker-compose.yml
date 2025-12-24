@@ -7,6 +7,8 @@ services:
       - contester-net
     environment:
       - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5432:5432
     restart: unless-stopped
 
   php:
@@ -41,16 +43,16 @@ services:
     ports:
       - 8080:8080
 
-  runner:
-    build:
-      context: runner
-    environment:
-      RUNNER_PGSQL_CONNECTION: "host=db dbname=contester user=postgres password=postgres"
-    networks:
-      - contester-net
-    depends_on:
-      - db
-    restart: unless-stopped
+  # runner:
+  #   build:
+  #     context: runner
+  #   environment:
+  #     RUNNER_PGSQL_CONNECTION: "host=db dbname=contester user=postgres password=postgres"
+  #   networks:
+  #     - contester-net
+  #   depends_on:
+  #     - db
+  #   restart: unless-stopped
 
 volumes:
   db-data:
