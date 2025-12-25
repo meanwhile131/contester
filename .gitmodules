@@ -1,0 +1,4 @@
+[submodule "runner/libpqxx"]
+	path = runner/libpqxx
+	url = https://github.com/jtv/libpqxx.git
+	shallow = true
