@@ -36,7 +36,7 @@ else {
     }
     echo "Задача: $challenge_id<br>";
     pg_query($db, "BEGIN;");
-    $result = pg_query_params($db, "INSERT INTO solutions(challenge,code) VALUES ($1,$2);", [$challenge_id, $code]);
+    $result = pg_query_params($db, "INSERT INTO solutions(challenge,code,sub) VALUES ($1,$2,$3);", [$challenge_id, $code, $userid]);
     if (pg_affected_rows($result) == 0) {
         pg_query($db, "ROLLBACK");
         echo "Ошибка при добавлении задачи в очередь!";

@@ -57,15 +57,21 @@ int main()
             continue; // no solutions were queued
         uint64_t id = queued_solutions.front();
         std::cout << "Processing #" << id << std::endl;
-        pqxx::result result;
+        std::string code;
+        std::vector<std::pair<std::string, std::string>> tests;
         queued_solutions.pop();
         {
             pqxx::work tx{c};
-            result = tx.exec("SELECT code FROM solutions WHERE id=$1", id);
+            pqxx::result result = tx.exec("SELECT code,challenge FROM solutions WHERE id=$1", id);
             if (result.size() != 1)
             {
                 std::cerr << "Cannot find solution #" << id << " from local queue in DB" << std::endl;
                 continue;
+            }
+            code = result[0][0].c_str();
+            uint64_t challenge_id = result[0][1].as<uint64_t>();
+            for (auto [in, out] : tx.query<std::string, std::string>(R"(SELECT "in","out" FROM tests WHERE challenge=$1)", challenge_id)) {
+                tests.emplace_back(in, out);
             }
             tx.exec("UPDATE solutions SET status='testing' WHERE id=$1", id);
             tx.commit();
@@ -74,30 +80,39 @@ int main()
         sandbox_path_str.pop_back(); // remove newline at the end
         std::filesystem::path sandbox = sandbox_path_str;
         sandbox = sandbox / "box";
-
         std::filesystem::create_hard_link("/usr/bin/python3.11", sandbox / "python3");
-        std::string code = result[0][0].c_str();
 
         std::ofstream code_file(sandbox / "code.py");
         code_file << code;
         code_file.close();
+        
+        std::cout << "Testing #" << id << " in " << sandbox << " (" << tests.size() << " tests)" << std::endl;
 
-        std::ofstream input(sandbox / "stdin");
-        input << "1\n2\n";
-        input.close();
-
-        std::cout << "Testing #" << id << " in " << sandbox << std::endl;
-        std::string out = run_command("isolate --stdin=stdin --stdout=stdout --run -- python3 code.py");
-
-        std::ifstream output(sandbox / "stdout");
+        bool all_passed = true;
+        for (auto [in, expected_out]: tests) {
+            std::ofstream input(sandbox / "stdin");
+            input << in;
+            input.close();
+    
+            run_command("isolate --stdin=stdin --stdout=stdout --run -- python3 code.py");
+            
+            std::ifstream output(sandbox / "stdout");
+            std::string real_out;
+            output >> real_out;
+            if (real_out != expected_out) {
+                std::cout << real_out << " doesn't match " << expected_out << std::endl;
+                all_passed = false;
+                break;
+            }
+        }
 
         run_command("isolate --cleanup");
         {
             pqxx::work tx{c};
-            tx.exec("UPDATE solutions SET status='done' WHERE id=$1", id);
+            tx.exec("UPDATE solutions SET status='done',all_passed=$2 WHERE id=$1", {id, all_passed});
             tx.commit();
         }
-        std::cout << "#" << id << " done" << std::endl;
+        std::cout << "#" << id << " done (" << (all_passed ? "pass)" : "fail)") << std::endl;
     }
     return 0;
 }
