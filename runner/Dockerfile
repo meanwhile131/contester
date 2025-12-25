@@ -1,11 +1,13 @@
-FROM alpine as builder
-RUN apk add --no-cache cmake ninja g++ git libpq-dev
+FROM debian:bookworm-slim as builder
+RUN apt-get update && apt-get install -y --no-install-recommends libpq-dev cmake ca-certificates ninja-build g++ git && rm -rf /var/lib/apt/lists/*
 WORKDIR /opt/src
-COPY CMakeLists.txt .
-COPY src src
-RUN cmake -B build -G Ninja && cmake --build build
+COPY . .
+RUN cmake -B build -DCMAKE_BUILD_TYPE=Release -G Ninja && cmake --build build
 
-FROM alpine
-RUN apk add --no-cache libpq libstdc++
+FROM debian:bookworm-slim
+RUN echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/isolate.asc] http://www.ucw.cz/isolate/debian/ bookworm-isolate main" > /etc/apt/sources.list.d/isolate.list
+ADD https://www.ucw.cz/isolate/debian/signing-key.asc /etc/apt/keyrings/isolate.asc
+RUN chmod 644 /etc/apt/keyrings/isolate.asc
+RUN apt-get update && apt-get install -y --no-install-recommends isolate libpq-dev && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /opt/src/build/main /usr/local/bin/
 CMD [ "/usr/local/bin/main" ]
