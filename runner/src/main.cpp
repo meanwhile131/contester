@@ -1,6 +1,7 @@
 #include <iostream>
 #include <pqxx/pqxx>
 #include <queue>
+#include <fstream>
 
 void queue_submitted_solutions(pqxx::work &tx, std::queue<uint64_t> &queue)
 {
@@ -10,6 +11,19 @@ void queue_submitted_solutions(pqxx::work &tx, std::queue<uint64_t> &queue)
         queue.push(id);
         std::cout << "Queued #" << id << std::endl;
     }
+}
+
+std::string run_command(std::string command) {
+    std::array<char, 128> buffer;
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+    while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
+    return result;
 }
 
 int main()
@@ -33,6 +47,7 @@ int main()
         std::cout << "Add solution #" << id << " to queue" << std::endl;
     }
     tx.commit();
+    std::system("isolate --cleanup");
     std::cout << "Starting main loop" << std::endl;
     while (true)
     {
@@ -55,9 +70,28 @@ int main()
             tx.exec("UPDATE solutions SET status='testing' WHERE id=$1", id);
             tx.commit();
         }
-        std::cout << "Testing #" << id << std::endl;
+        std::string sandbox_path_str = run_command("isolate --init");
+        sandbox_path_str.pop_back(); // remove newline at the end
+        std::filesystem::path sandbox = sandbox_path_str;
+        sandbox = sandbox / "box";
 
+        std::filesystem::create_hard_link("/usr/bin/python3.11", sandbox / "python3");
+        std::string code = result[0][0].c_str();
 
+        std::ofstream code_file(sandbox / "code.py");
+        code_file << code;
+        code_file.close();
+
+        std::ofstream input(sandbox / "stdin");
+        input << "1\n2\n";
+        input.close();
+
+        std::cout << "Testing #" << id << " in " << sandbox << std::endl;
+        std::string out = run_command("isolate --stdin=stdin --stdout=stdout --run -- python3 code.py");
+
+        std::ifstream output(sandbox / "stdout");
+
+        run_command("isolate --cleanup");
         {
             pqxx::work tx{c};
             tx.exec("UPDATE solutions SET status='done' WHERE id=$1", id);
