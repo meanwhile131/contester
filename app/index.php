@@ -39,7 +39,6 @@ if (!empty($_SESSION["user_id"])) {
         echo "<h3>Войдите в аккаунт, чтобы видеть решения!</h3>";
         echo <<<EOF
         <script src="https://accounts.google.com/gsi/client" async></script>
-        <script src="/js/auth.js"></script>
         <div
             id="g_id_onload"
             data-client_id="$google_clientid"
