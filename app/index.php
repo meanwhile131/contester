@@ -87,15 +87,17 @@ if (!empty($_SESSION["user_id"])) {
             <a href="/profile.php">Редактор профиля</a><br>
             <a href="index.php?log_out=1">Выйти из аккаунта</a><br>
             EOF;
+            if ($is_admin) {
+                $new_task_id = intval($id) + 1;
+                echo <<<EOF
+                <br>
+                <a href="view_challenge.php?id=$new_task_id&edit=1">Добавить задачу</a>
+                <br>
+                <a href="solved_challenges.php">Решённые задачи</a>
+                EOF;
+            }
         }
-        if ($is_admin) {
-            $new_task_id = intval($id) + 1;
-            echo <<<EOF
-            <a href="view_challenge.php?id=$new_task_id&edit=1">Добавить задачу</a>
-            <br>
-            <a href="solved_challenges.php">Решённые задачи</a>
-            EOF;
-        } ?>
+        ?>
     </div>
 </body>
 
