@@ -1,6 +1,9 @@
 <?php
 include "vendor/autoload.php";
 include "secrets.php";
+if (array_key_exists("log_out", $_GET) && $_GET["log_out"] == 1) {
+    unset($_SESSION["user_id"]);
+}
 
 $tasks = pg_query($db, "SELECT * FROM challenges ORDER BY id ASC");
 $is_admin = false; // default value
@@ -82,6 +85,7 @@ if (!empty($_SESSION["user_id"])) {
         if (!empty($userid)) {
             echo <<<EOF
             <a href="/profile.php">Редактор профиля</a><br>
+            <a href="index.php?log_out=1">Выйти из аккаунта</a><br>
             EOF;
         }
         if ($is_admin) {
