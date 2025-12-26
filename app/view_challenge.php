@@ -59,11 +59,6 @@ $edit_mode = !empty($_GET["edit"]) && $_GET["edit"] == 1;
     {$challenge["name"]}
     </h1>
     EOF;
-    if (empty($user)) {
-        echo <<<EOF
-        <h3>Войдите в аккаунт, чтобы отправлять решения!</h3>
-        EOF;
-    }
     ?>
     <div id="challenge">
         <?php echo <<<EOF
@@ -120,7 +115,7 @@ $edit_mode = !empty($_GET["edit"]) && $_GET["edit"] == 1;
             </form>
             <button onclick="edit()">Сохранить</button>
             EOF;
-        } else {
+        } else if (!empty($user)) {
             echo <<<EOF
         
             <form action="/check_solution.php" method="post" id="send_form">
@@ -130,6 +125,12 @@ $edit_mode = !empty($_GET["edit"]) && $_GET["edit"] == 1;
                 <button type="submit">Отправить</button>
             </form>
         EOF;
+        } else {
+            if (empty($user)) {
+                echo <<<EOF
+                <h3>Войдите в аккаунт, чтобы отправлять решения!</h3>
+                EOF;
+            }
         }
         ?>
     </div>
