@@ -1,7 +1,7 @@
 <?php
 require_once 'secrets.php';
-$userid = $_SESSION["user_id"];
-if ($userid) {
+if (!empty($_SESSION["user_id"])) {
+    $userid = $_SESSION["user_id"];
     $user_query = pg_query_params($db, "SELECT is_admin FROM users WHERE sub=$1", [$userid]);
     $user = pg_fetch_row($user_query, null, PGSQL_ASSOC);
     if (!$user) {
@@ -10,6 +10,7 @@ if ($userid) {
     }
     $is_admin = $user["is_admin"] == "t";
 }
+$edit_mode = !empty($_GET["edit"]) && $_GET["edit"] == 1;
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -31,18 +32,17 @@ if ($userid) {
     include "vendor/autoload.php";
 
     $task_safe = htmlspecialchars($task, ENT_QUOTES | ENT_SUBSTITUTE, "UTF-8");
-    $edit = $_GET["edit"] == 1 && $is_admin;
-    if ($edit) {
+    if ($edit_mode) {
         echo <<<EOF
         <script src="/js/edit_challenge.js"></script>
         EOF;
     }
-    $editable = $edit ? " contenteditable=\"true\"" : "";
+    $editable = $edit_mode ? " contenteditable=\"true\"" : "";
 
     $challenge_request = pg_query_params($db, "SELECT * FROM challenges WHERE id=$1", [$_GET["id"]]);
     $challenge = pg_fetch_row($challenge_request, null, PGSQL_ASSOC);
     if (!$challenge) {
-        if ($edit) {
+        if ($edit_mode) {
             $challenge = ["name" => "Название задачи", "text" => "Условие задачи", "tests" => "{}"];
         } else {
             echo "<p>Задача не найдена!</p>";
@@ -59,9 +59,9 @@ if ($userid) {
     {$challenge["name"]}
     </h1>
     EOF;
-    if (!$user) {
+    if (empty($user)) {
         echo <<<EOF
-        <h3>Войдите в аккаунт, чтобы отправить задачу!</h3>
+        <h3>Войдите в аккаунт, чтобы отправлять решения!</h3>
         EOF;
     }
     ?>
@@ -91,11 +91,11 @@ if ($userid) {
                         </tr>
                         EOF;
                 $i++;
-                if ($i >= 3 && !$edit) {
+                if ($i >= 3 && !$edit_mode) {
                     break;
                 }
             }
-            if ($edit) {
+            if ($edit_mode) {
                 echo <<<EOF
                         <tr>
                             <td></td>
@@ -109,7 +109,7 @@ if ($userid) {
     </div>
     <div id="form">
         <?php
-        if ($edit) {
+        if ($edit_mode) {
             echo <<<EOF
             <form action="/save_challenge.php" method="post" id="send_form">
                 <input type="hidden" id="form_text" name="text" value="">

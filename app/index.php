@@ -3,8 +3,9 @@ include "vendor/autoload.php";
 include "secrets.php";
 
 $tasks = pg_query($db, "SELECT * FROM challenges ORDER BY id ASC");
-$userid = $_SESSION["user_id"];
-if ($userid) {
+$is_admin = false; // default value
+if (!empty($_SESSION["user_id"])) {
+    $userid = $_SESSION["user_id"];
     $user_query = pg_query_params($db, "SELECT * FROM users WHERE sub=$1", [$userid]);
     $user = pg_fetch_row($user_query, null, PGSQL_ASSOC);
     if (!$user) {
@@ -28,7 +29,7 @@ if ($userid) {
 <body>
     <h1>Задачи</h1>
     <?php
-    if (!$userid) {
+    if (empty($userid)) {
         $host = htmlspecialchars($_SERVER['HTTP_HOST']);
         $domain = parse_url($_SERVER['HTTP_HOST'], PHP_URL_HOST);
         $scheme = $domain == "localhost" ? "http" : "https";
@@ -60,7 +61,13 @@ if ($userid) {
                     $id = $row["id"];
                     $edit_link = $is_admin ? " (<a href=\"view_challenge.php?id=$id&edit=1\">редактировать</a>)" : "";
                     $name = $row["name"];
-                    $is_solved = $user ? ($user["tasks_solved"] & 1 << (intval($id) - 1) ? "+" : "-") : "?";
+                    if (!empty($user) && array_key_exists("tasks_solved", $user)) {
+                        $solved = $user["tasks_solved"] & 1 << (intval($id) - 1);
+                        $is_solved = $solved ? "+" : "-";
+                    }
+                    else {
+                        $is_solved = "?";
+                    }
                     echo <<<EOF
                     <tr>
                     <td><a href="view_challenge.php?id=$id">$id</a>$edit_link</td>
@@ -72,7 +79,7 @@ if ($userid) {
             </tbody>
         </table>
         <?php
-        if ($userid) {
+        if (!empty($userid)) {
             echo <<<EOF
             <a href="/profile.php">Редактор профиля</a><br>
             EOF;
