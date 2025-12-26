@@ -53,6 +53,15 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
         $group_231 = ($group == 231) ? "checked" : "";
         $group_241 = ($group == 241) ? "checked" : "";
     }
+    else { // default values
+        $first_name = "";
+        $second_name = "";
+        $third_name = "";
+        $group_211 = "";
+        $group_212 = "";
+        $group_231 = "";
+        $group_241 = "";
+    }
     if (isset($success)) {
         if ($success) {
             echo "<h4 class=\"success_message\">Профиль успешно изменен.</h4>";
