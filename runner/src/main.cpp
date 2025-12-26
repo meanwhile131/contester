@@ -100,7 +100,6 @@ int main()
             std::string real_out;
             output >> real_out;
             if (real_out != expected_out) {
-                std::cout << real_out << " doesn't match " << expected_out << std::endl;
                 all_passed = false;
                 break;
             }
