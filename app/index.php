@@ -63,8 +63,9 @@ if (!empty($_SESSION["user_id"])) {
                     $id = $row["id"];
                     $edit_link = $is_admin ? " (<a href=\"view_challenge.php?id=$id&edit=1\">редактировать</a>)" : "";
                     $name = $row["name"];
-                    if (!empty($user) && array_key_exists("tasks_solved", $user)) {
-                        $solved = $user["tasks_solved"] & 1 << (intval($id) - 1);
+                    if (!empty($user)) {
+                        $solved_query = pg_query_params($db, "SELECT 1 FROM solutions WHERE sub=$1 AND challenge=$2 AND all_passed=true LIMIT 1;", [$userid, $id]);
+                        $solved = pg_num_rows($solved_query) > 0; // any passing solutions found
                         $is_solved = $solved ? "+" : "-";
                     }
                     else {

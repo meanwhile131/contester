@@ -63,9 +63,11 @@ if ($userid) {
                     <td>{$group}</td>
                 EOF;
                 foreach ($challenges as $_ => $challenge) {
-                    $id = intval($challenge["id"]) - 1;
-                    $solved = intval($user["tasks_solved"]) & 1 << $id ? "+" : "-";
-                    echo "<td>$solved</td>";
+                    $id = intval($challenge["id"]);
+                    $solved_query = pg_query_params($db, "SELECT 1 FROM solutions WHERE sub=$1 AND challenge=$2 AND all_passed=true LIMIT 1;", [$user["sub"], $id]);
+                    $is_solved = pg_num_rows($solved_query) > 0; // any passing solutions found
+                    $solved_str = $is_solved ? "+" : "-";
+                    echo "<td>$solved_str</td>";
                 }
             }
             ?>
