@@ -21,7 +21,8 @@ $edit_mode = !empty($_GET["edit"]) && $_GET["edit"] == 1;
     <title>Задача
         <?php
         $task = $_GET["id"];
-        echo $task;
+        $task_safe = htmlspecialchars($task, ENT_QUOTES | ENT_SUBSTITUTE, "UTF-8");
+        echo $task_safe;
         ?>
     </title>
     <link rel="stylesheet" href="/css/general.css">
@@ -31,7 +32,6 @@ $edit_mode = !empty($_GET["edit"]) && $_GET["edit"] == 1;
     include "secrets.php";
     include "vendor/autoload.php";
 
-    $task_safe = htmlspecialchars($task, ENT_QUOTES | ENT_SUBSTITUTE, "UTF-8");
     if ($edit_mode) {
         echo <<<EOF
         <script src="/js/edit_challenge.js"></script>
@@ -77,8 +77,8 @@ $edit_mode = !empty($_GET["edit"]) && $_GET["edit"] == 1;
             $tests_request = pg_query_params($db, "SELECT * FROM tests WHERE challenge=$1", [$_GET["id"]]);
             $tests = pg_fetch_all($tests_request, PGSQL_ASSOC);
             foreach ($tests as $test) {
-                $input = $test["in"];
-                $output = $test["out"];
+                $input = htmlspecialchars($test["in"]);
+                $output = htmlspecialchars($test["out"]);
                 echo <<<EOF
                         <tr>
                             <td>$input</td>

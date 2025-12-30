@@ -14,7 +14,7 @@ services:
   php:
     build:
       context: php
-      dockerfile: Dockerfile
+      dockerfile: Containerfile
     volumes:
       - ./app:/var/www/html/
       - ./php/custom.ini:/usr/local/etc/php/conf.d/custom.ini 
@@ -46,6 +46,7 @@ services:
   runner:
     build:
       context: runner
+      dockerfile: Containerfile
     privileged: true
     environment:
       RUNNER_PGSQL_CONNECTION: "host=db dbname=contester user=postgres password=postgres"

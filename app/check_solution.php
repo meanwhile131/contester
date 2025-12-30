@@ -34,7 +34,8 @@ else {
         echo "Нет всех параметров запроса!";
         exit();
     }
-    echo "Задача: $challenge_id<br>";
+    $challenge_id_safe = htmlspecialchars($challenge_id);
+    echo "Задача: $challenge_id_safe<br>";
     pg_query($db, "BEGIN;");
     $result = pg_query_params($db, "INSERT INTO solutions(challenge,code,sub) VALUES ($1,$2,$3);", [$challenge_id, $code, $userid]);
     if (pg_affected_rows($result) == 0) {

@@ -52,11 +52,15 @@ if ($userid) {
         <tbody>
             <?php
             foreach ($users as $_ => $user) {
+                $second_name = htmlspecialchars($user["second_name"]);
+                $first_name = htmlspecialchars($user["first_name"]);
+                $group = htmlspecialchars($user["group"]);
+
                 echo <<<EOF
                 <tr>
-                    <td>{$user["second_name"]}</td>
-                    <td>{$user["first_name"]}</td>
-                    <td>{$user["group"]}</td>
+                    <td>{$second_name}</td>
+                    <td>{$first_name}</td>
+                    <td>{$group}</td>
                 EOF;
                 foreach ($challenges as $_ => $challenge) {
                     $id = intval($challenge["id"]) - 1;
