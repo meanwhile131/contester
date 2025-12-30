@@ -94,7 +94,7 @@ int main()
             input << in;
             input.close();
     
-            run_command("isolate --stdin=stdin --stdout=stdout --run -- python3 code.py");
+            run_command("isolate -w 3 -t 3 -m 100000 -q 100,300 --stdin=stdin --stdout=stdout --run -- python3 code.py");
             
             std::ifstream output(sandbox / "stdout");
             std::string real_out;
