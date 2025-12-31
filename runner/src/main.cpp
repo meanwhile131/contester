@@ -33,7 +33,7 @@ int main()
     pqxx::connection c{db_connection_string};
     std::cout << "Connected to " << c.dbname() << std::endl;
 
-    c.listen("solution_submitted", [&c, &queued_solutions](pqxx::notification notification)
+    c.listen("solutions", [&c, &queued_solutions](pqxx::notification notification)
              {
         pqxx::work tx{c};
         queue_submitted_solutions(tx, queued_solutions);

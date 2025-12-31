@@ -43,7 +43,7 @@ else {
         echo "Ошибка при добавлении задачи в очередь!";
         exit();
     }
-    pg_query($db, "NOTIFY solution_submitted;");
+    pg_query($db, "NOTIFY solutions;");
     pg_query($db, "COMMIT;");
     echo "Задача добавлена в очередь";
     ?>
