@@ -49,7 +49,7 @@ if (!empty($_SESSION["user_id"])) {
         EOF;
     }
     ?>
-    <div>
+    <main class="table-container">
         <table>
             <thead>
                 <tr>
@@ -67,8 +67,7 @@ if (!empty($_SESSION["user_id"])) {
                         $solved_query = pg_query_params($db, "SELECT 1 FROM solutions WHERE sub=$1 AND challenge=$2 AND all_passed=true LIMIT 1;", [$userid, $id]);
                         $solved = pg_num_rows($solved_query) > 0; // any passing solutions found
                         $is_solved = $solved ? "+" : "-";
-                    }
-                    else {
+                    } else {
                         $is_solved = "?";
                     }
                     echo <<<EOF
@@ -81,24 +80,27 @@ if (!empty($_SESSION["user_id"])) {
                 } ?>
             </tbody>
         </table>
-        <?php
-        if (!empty($userid)) {
-            echo <<<EOF
+    </main>
+    <?php
+    if (!empty($userid)) {
+        echo <<<EOF
+            <nav>
             <a href="/profile.php">Редактор профиля</a><br>
             <a href="index.php?log_out=1">Выйти из аккаунта</a><br>
+            <a href="status.php">Мои решения</a><br>
             EOF;
-            if ($is_admin) {
-                $new_task_id = intval($id) + 1;
-                echo <<<EOF
+        if ($is_admin) {
+            $new_task_id = intval($id) + 1;
+            echo <<<EOF
                 <br>
                 <a href="view_challenge.php?id=$new_task_id&edit=1">Добавить задачу</a>
                 <br>
                 <a href="solved_challenges.php">Решённые задачи</a>
                 EOF;
-            }
         }
-        ?>
-    </div>
+        echo "</nav>";
+    }
+    ?>
 </body>
 
 </html>

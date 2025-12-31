@@ -35,44 +35,46 @@ if ($userid) {
     $challenges = pg_fetch_all($challenges_query);
     ?>
     <h1>Решённые задачи</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>Фамилия</th>
-                <th>Имя</th>
-                <th>Группа</th>
+    <main>
+        <table>
+            <thead>
+                <tr>
+                    <th>Фамилия</th>
+                    <th>Имя</th>
+                    <th>Группа</th>
+                    <?php
+                    foreach ($challenges as $_ => $challenge) {
+                        $id = $challenge["id"];
+                        echo "<th>{$id}</th>";
+                    }
+                    ?>
+                </tr>
+            </thead>
+            <tbody>
                 <?php
-                foreach ($challenges as $_ => $challenge) {
-                    $id = $challenge["id"];
-                    echo "<th>{$id}</th>";
-                }
-                ?>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            foreach ($users as $_ => $user) {
-                $second_name = htmlspecialchars($user["second_name"]);
-                $first_name = htmlspecialchars($user["first_name"]);
-                $group = htmlspecialchars($user["group"]);
+                foreach ($users as $_ => $user) {
+                    $second_name = htmlspecialchars($user["second_name"]);
+                    $first_name = htmlspecialchars($user["first_name"]);
+                    $group = htmlspecialchars($user["group"]);
 
-                echo <<<EOF
+                    echo <<<EOF
                 <tr>
                     <td>{$second_name}</td>
                     <td>{$first_name}</td>
                     <td>{$group}</td>
                 EOF;
-                foreach ($challenges as $_ => $challenge) {
-                    $id = intval($challenge["id"]);
-                    $solved_query = pg_query_params($db, "SELECT 1 FROM solutions WHERE sub=$1 AND challenge=$2 AND all_passed=true LIMIT 1;", [$user["sub"], $id]);
-                    $is_solved = pg_num_rows($solved_query) > 0; // any passing solutions found
-                    $solved_str = $is_solved ? "+" : "-";
-                    echo "<td>$solved_str</td>";
+                    foreach ($challenges as $_ => $challenge) {
+                        $id = intval($challenge["id"]);
+                        $solved_query = pg_query_params($db, "SELECT 1 FROM solutions WHERE sub=$1 AND challenge=$2 AND all_passed=true LIMIT 1;", [$user["sub"], $id]);
+                        $is_solved = pg_num_rows($solved_query) > 0; // any passing solutions found
+                        $solved_str = $is_solved ? "+" : "-";
+                        echo "<td>$solved_str</td>";
+                    }
                 }
-            }
-            ?>
-        </tbody>
-    </table>
+                ?>
+            </tbody>
+        </table>
+    </main>
 </body>
 
 </html>

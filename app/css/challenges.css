@@ -14,7 +14,12 @@ td {
     width: fit-content;
 }
 
-div {
+.table-container {
+    margin: auto;
+    text-align: center;
+}
+
+nav {
     margin: auto;
     text-align: center;
 }
