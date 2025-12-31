@@ -1,5 +1,6 @@
 h1 {
     text-align: center;
+    width: 100%;
 }
 
 form {
@@ -25,4 +26,38 @@ h3 {
 .centered-a {
     text-align: center;
     display: block;
+}
+
+.horizontal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+nav {
+    margin: auto;
+    text-align: center;
+}
+
+table {
+    margin: auto;
+}
+
+table,
+th,
+td {
+    border: 2px solid black;
+    border-collapse: collapse;
+}
+
+td {
+    text-align: center;
+    width: fit-content;
+}
+
+.github-logo {
+    position: absolute;
+    top: 20px;
+    right: 10px;
 }

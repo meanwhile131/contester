@@ -24,7 +24,6 @@ $solutions = pg_query_params($db, 'SELECT id,challenge,"status",all_passed FROM 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мои решения</title>
-    <link rel="stylesheet" href="/css/challenges.css">
     <link rel="stylesheet" href="/css/general.css">
 </head>
 

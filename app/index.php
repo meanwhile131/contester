@@ -25,12 +25,21 @@ if (!empty($_SESSION["user_id"])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Главная страница</title>
-    <link rel="stylesheet" href="/css/challenges.css">
     <link rel="stylesheet" href="/css/general.css">
+    <style>
+        .github-logo {
+            margin-right: 20px;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Задачи</h1>
+    <header class="horizontal-header">
+        <h1>Задачи</h1>
+        <a href="https://github.com/meanwhile131/contester" class="github-logo">
+            <img src="github-mark.svg" height="40">
+        </a>
+    </header>
     <?php
     if (empty($userid)) {
         $host = htmlspecialchars($_SERVER['HTTP_HOST']);
