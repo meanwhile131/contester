@@ -23,13 +23,13 @@ $solutions = pg_query_params($db, 'SELECT id,challenge,"status",all_passed FROM 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Решения</title>
+    <title>Мои решения</title>
     <link rel="stylesheet" href="/css/challenges.css">
     <link rel="stylesheet" href="/css/general.css">
 </head>
 
 <body>
-    <h1>Решения</h1>
+    <h1>Мои решения</h1>
     <?php
     ?>
     <main class="table-container">
